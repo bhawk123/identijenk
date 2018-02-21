@@ -12,9 +12,10 @@ RUN echo "deb http://apt.dockerproject.org/repo debian-jessie main" \
     && rm -rf /var/lib/apt/lists/*
 RUN echo "jenkins ALL=NOPASSWD: ALL" >> /etc/sudoers
 
-RUN curl -L https://github.com/docker/compose/releases/downloads/1.4.1/\
-docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose;\
-    chmod +x /usr/local/bin/docker-compose
+RUN curl -v -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-Linux-x86_64 -o /usr/local/bin/docker-compose; chmod +x /usr/local/bin/docker-compose
+
+# curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-Darwin-x86_64 -o /usr/local/bin/docker-compose
+# curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-Linux-x86_64 -o /usr/local/bin/docker-compose
 
 USER jenkins
 COPY plugins.txt /usr/share/jenkins/plugins.txt
