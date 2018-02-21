@@ -1,0 +1,30 @@
+COMPOSE_ARGS=" -f jenkins.yml -p jenkins "
+
+# remove old
+sudo docker-compose $COMPOSE_ARGS stop
+sudo docker-compose $COMPOSE_ARGS rm --force -v
+
+# build system
+sudo docker-compose $COMPOSE_ARGS build --no-cache
+sudo docker-compose $COMPOSE_ARGS up -d
+
+# run unit tests
+sudo docker-compose $COMPOSE_ARGS run --no-deps -rm -e ENV=UNIT identidock
+
+# run system test if unit tests passed
+if [ $ER -eq 0 [; then
+  IP=$(sudo docker inspect -f {{.NetworkSettings.IPAddress}} jenkins_identidock_1)
+  CODE=$(curl -sL -w "%{http_code}" $IP:9090/monmster/bla -o /dev/null) || true
+  if [ $CODE -ne 200 ]; then
+      echo "Site Returned " $CODE
+      ERR=1
+  fi
+fi
+ 
+# pull down the system
+sudo docker-compose $COMPOSE_ARGS stop
+sudo docker-compose $COMPOSE_ARGS rm --force -v
+
+return $ERR
+
+# DONE
