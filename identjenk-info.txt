@@ -1,0 +1,10 @@
+identijenk
+
+-- Build
+docker build -t identijenk .
+
+-- run the container
+docker run --name jenkins-data identijenk echo "Jenkins Data Container"
+
+-- run a container using data container, mounting volume file socket for inter-container communication
+docker run -d --name jenkins -p 8080:8080 --volumes-from jenkins-data -v /var/run/docker.sock:/var/run/docker.sock identijenk
