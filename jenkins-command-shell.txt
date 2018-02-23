@@ -9,16 +9,26 @@ sudo docker-compose $COMPOSE_ARGS build --no-cache
 sudo docker-compose $COMPOSE_ARGS up -d
 
 # run unit tests
-sudo docker-compose $COMPOSE_ARGS run --no-deps --rm -e ENV=UNIT identidock 
+sudo docker-compose $COMPOSE_ARGS run --no-deps --rm -e ENV=UNIT bhawk123/identidock:newest
 ERR=$?
 
 # run system test if unit tests passed
 if [ $ERR -eq 0 ]; then
   IP=$(sudo docker inspect -f {{.NetworkSettings.IPAddress}} jenkins_identidock_1)
   CODE=$(curl -sL -w "%{http_code}" $IP:9090/monster/bla -o /dev/null) || true
+  echo "Site returned: ${CODE}"
   if [ $CODE -ne 200 ]; then
-      echo "Site Returned " $CODE
-      ERR=1
+      echo "Test passed - Tagging"
+      HASH=$(git rev-parse --short HEAD)
+      sudo docker tag jenkins_identidock bhawk123/identidock:$HASH
+      sudo docker tag jenkins_identidock bhawk123/identidock:newest
+      echo "Pushing to repository"
+      sudo docker login -e bhawk123@gmail.com -u bhawk123 -p Ginger1@3
+      sudo docker push bhawk123/identidock:$HASH
+      sudo docker push bhawk123/identidock:newest
+  else    
+    echo "Site Returned " $CODE
+    ERR=1
   fi
 fi
  
